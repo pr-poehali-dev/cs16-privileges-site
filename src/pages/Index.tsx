@@ -201,11 +201,18 @@ export default function Index() {
             )
           )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <Link
-            to="/profile"
+            to="/login"
             className="font-orbitron text-xs px-4 py-2 rounded-sm transition-all duration-200 hidden sm:block"
             style={{ border: "1px solid rgba(0,245,255,0.25)", color: "rgba(0,245,255,0.7)" }}
+          >
+            ВОЙТИ
+          </Link>
+          <Link
+            to="/dashboard"
+            className="font-orbitron text-xs px-4 py-2 rounded-sm transition-all duration-200 hidden sm:block"
+            style={{ border: "1px solid rgba(200,240,255,0.12)", color: "rgba(200,240,255,0.45)" }}
           >
             КАБИНЕТ
           </Link>

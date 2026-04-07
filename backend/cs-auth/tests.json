@@ -1,0 +1,19 @@
+{
+  "tests": [
+    {
+      "name": "GET /me without token returns 401",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 401,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Register with empty fields returns 400",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "register", "email": "", "username": "", "password": ""},
+      "expectedStatus": 400,
+      "bodyMatcher": "partial"
+    }
+  ]
+}

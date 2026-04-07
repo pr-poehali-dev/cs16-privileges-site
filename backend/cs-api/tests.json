@@ -1,0 +1,34 @@
+{
+  "tests": [
+    {
+      "name": "me without token returns 401",
+      "method": "GET",
+      "path": "/?action=me",
+      "expectedStatus": 401,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "settings_get returns object",
+      "method": "GET",
+      "path": "/?action=settings_get",
+      "expectedStatus": 200,
+      "expectedBody": {"cs_server_host": "95.188.88.74"},
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "chat_get returns array",
+      "method": "GET",
+      "path": "/?action=chat_get",
+      "expectedStatus": 200,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "register with empty fields returns 400",
+      "method": "POST",
+      "path": "/",
+      "body": {"action": "register", "email": "", "username": "", "password": ""},
+      "expectedStatus": 400,
+      "bodyMatcher": "partial"
+    }
+  ]
+}
