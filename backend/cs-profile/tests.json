@@ -1,0 +1,19 @@
+{
+  "tests": [
+    {
+      "name": "Missing player_id returns 400",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 400,
+      "bodyMatcher": "partial"
+    },
+    {
+      "name": "Unknown player returns found=false",
+      "method": "GET",
+      "path": "/?player_id=NONEXISTENT_PLAYER_9999999",
+      "expectedStatus": 200,
+      "expectedBody": {"found": false},
+      "bodyMatcher": "partial"
+    }
+  ]
+}

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import Icon from "@/components/ui/icon";
 
 const CREATE_PAYMENT_URL = "https://functions.poehali.dev/2157a038-a9a8-42cb-8b80-cba2a58fd4a1";
@@ -200,12 +201,21 @@ export default function Index() {
             )
           )}
         </div>
-        <button
-          onClick={() => scrollTo("privileges")}
-          className="neon-btn-magenta font-orbitron text-xs px-4 py-2 rounded-sm"
-        >
-          КУПИТЬ
-        </button>
+        <div className="flex items-center gap-3">
+          <Link
+            to="/profile"
+            className="font-orbitron text-xs px-4 py-2 rounded-sm transition-all duration-200 hidden sm:block"
+            style={{ border: "1px solid rgba(0,245,255,0.25)", color: "rgba(0,245,255,0.7)" }}
+          >
+            КАБИНЕТ
+          </Link>
+          <button
+            onClick={() => scrollTo("privileges")}
+            className="neon-btn-magenta font-orbitron text-xs px-4 py-2 rounded-sm"
+          >
+            КУПИТЬ
+          </button>
+        </div>
       </nav>
 
       {/* HERO */}
