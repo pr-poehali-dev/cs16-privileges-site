@@ -1,6 +1,8 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
 
+const CREATE_PAYMENT_URL = "https://functions.poehali.dev/2157a038-a9a8-42cb-8b80-cba2a58fd4a1";
+
 const privileges = [
   {
     id: "vip",
@@ -94,11 +96,53 @@ const servers = [
 export default function Index() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [activeSection, setActiveSection] = useState("home");
+  const [buyModal, setBuyModal] = useState<string | null>(null);
+  const [playerId, setPlayerId] = useState("");
+  const [authType, setAuthType] = useState<"steamid" | "nick">("steamid");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [paymentSuccess, setPaymentSuccess] = useState(
+    typeof window !== "undefined" && window.location.search.includes("payment=success")
+  );
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
     setActiveSection(id);
   };
+
+  const openBuy = (privilegeId: string) => {
+    setError("");
+    setPlayerId("");
+    setBuyModal(privilegeId);
+  };
+
+  const handleBuy = async () => {
+    if (!playerId.trim()) {
+      setError("Введи Steam ID или ник");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    try {
+      const res = await fetch(CREATE_PAYMENT_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ privilege: buyModal, player_id: playerId.trim(), auth_type: authType }),
+      });
+      const data = await res.json();
+      if (data.confirmation_url) {
+        window.location.href = data.confirmation_url;
+      } else {
+        setError(data.error || "Ошибка создания платежа");
+      }
+    } catch {
+      setError("Ошибка соединения. Попробуй ещё раз.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const selectedPrivilege = privileges.find((p) => p.id === buyModal);
 
   const cardClass = (color: string) => {
     if (color === "magenta") return "cyber-card cyber-card-magenta";
@@ -297,7 +341,10 @@ export default function Index() {
                   ))}
                 </ul>
 
-                <button className={`${btnClass(priv.color)} w-full py-3 font-orbitron text-sm rounded-sm`}>
+                <button
+                  onClick={() => openBuy(priv.id)}
+                  className={`${btnClass(priv.color)} w-full py-3 font-orbitron text-sm rounded-sm`}
+                >
                   КУПИТЬ {priv.name}
                 </button>
               </div>
@@ -503,6 +550,131 @@ export default function Index() {
           <a href="#" className="hover:opacity-70 transition-opacity">Telegram</a>
         </div>
       </footer>
+
+      {/* SUCCESS BANNER */}
+      {paymentSuccess && (
+        <div
+          className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 px-6 py-4 font-exo text-sm"
+          style={{
+            background: "rgba(0,255,136,0.1)",
+            border: "1px solid var(--neon-green)",
+            color: "var(--neon-green)",
+            backdropFilter: "blur(12px)",
+            clipPath: "polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 12px 100%, 0 calc(100% - 12px))",
+          }}
+        >
+          <Icon name="CheckCircle" size={18} />
+          <span>Оплата прошла успешно! Привилегия активирована — заходи на сервер.</span>
+          <button onClick={() => setPaymentSuccess(false)} style={{ marginLeft: 8, opacity: 0.6 }}>
+            <Icon name="X" size={14} />
+          </button>
+        </div>
+      )}
+
+      {/* BUY MODAL */}
+      {buyModal && selectedPrivilege && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center px-4"
+          style={{ background: "rgba(6,10,15,0.85)", backdropFilter: "blur(8px)" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setBuyModal(null); }}
+        >
+          <div
+            className={`cyber-card ${buyModal === "magenta" ? "cyber-card-magenta" : buyModal === "elite" ? "cyber-card-gold" : ""} w-full max-w-md p-7`}
+            style={{ animation: "fadeInUp 0.3s ease forwards" }}
+          >
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <div className="font-orbitron font-bold text-xl" style={{ color: badgeColor(selectedPrivilege.color) }}>
+                  {selectedPrivilege.name}
+                </div>
+                <div className="font-exo text-xs mt-0.5" style={{ color: "rgba(200,240,255,0.4)" }}>
+                  {selectedPrivilege.price}₽ / 30 дней
+                </div>
+              </div>
+              <button onClick={() => setBuyModal(null)} style={{ color: "rgba(200,240,255,0.4)" }}>
+                <Icon name="X" size={20} />
+              </button>
+            </div>
+
+            <div className="mb-4">
+              <div className="font-exo text-xs mb-2" style={{ color: "rgba(200,240,255,0.5)", letterSpacing: 2 }}>
+                КАК ИДЕНТИФИЦИРОВАТЬ?
+              </div>
+              <div className="flex gap-2">
+                {(["steamid", "nick"] as const).map((t) => (
+                  <button
+                    key={t}
+                    onClick={() => setAuthType(t)}
+                    className="flex-1 py-2 font-orbitron text-xs rounded-sm transition-all duration-200"
+                    style={{
+                      border: `1px solid ${authType === t ? "var(--neon-cyan)" : "rgba(0,245,255,0.2)"}`,
+                      background: authType === t ? "rgba(0,245,255,0.1)" : "transparent",
+                      color: authType === t ? "var(--neon-cyan)" : "rgba(200,240,255,0.4)",
+                    }}
+                  >
+                    {t === "steamid" ? "STEAM ID" : "НИК"}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mb-6">
+              <div className="font-exo text-xs mb-2" style={{ color: "rgba(200,240,255,0.5)", letterSpacing: 2 }}>
+                {authType === "steamid" ? "ТВОЙ STEAM ID" : "НИК НА СЕРВЕРЕ"}
+              </div>
+              <input
+                type="text"
+                value={playerId}
+                onChange={(e) => setPlayerId(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && handleBuy()}
+                placeholder={authType === "steamid" ? "STEAM_0:0:12345678" : "Твой ник"}
+                className="w-full px-4 py-3 font-exo text-sm rounded-sm outline-none transition-all duration-200"
+                style={{
+                  background: "rgba(0,245,255,0.04)",
+                  border: "1px solid rgba(0,245,255,0.25)",
+                  color: "rgba(200,240,255,0.9)",
+                  caretColor: "var(--neon-cyan)",
+                }}
+              />
+              {authType === "steamid" && (
+                <div className="mt-1.5 font-exo text-xs" style={{ color: "rgba(200,240,255,0.3)" }}>
+                  Узнать Steam ID: напиши в консоли CS — <span style={{ color: "var(--neon-cyan)" }}>status</span>
+                </div>
+              )}
+            </div>
+
+            {error && (
+              <div className="mb-4 px-3 py-2 font-exo text-xs" style={{ background: "rgba(255,0,0,0.08)", border: "1px solid rgba(255,0,0,0.3)", color: "#ff6b6b", borderRadius: 2 }}>
+                {error}
+              </div>
+            )}
+
+            <button
+              onClick={handleBuy}
+              disabled={loading}
+              className={`${btnClass(selectedPrivilege.color)} w-full py-3.5 font-orbitron text-sm rounded-sm flex items-center justify-center gap-2`}
+              style={{ opacity: loading ? 0.7 : 1 }}
+            >
+              {loading ? (
+                <>
+                  <Icon name="Loader" size={16} className="animate-spin" />
+                  СОЗДАЁМ ПЛАТЁЖ...
+                </>
+              ) : (
+                <>
+                  <Icon name="CreditCard" size={16} />
+                  ОПЛАТИТЬ {selectedPrivilege.price}₽
+                </>
+              )}
+            </button>
+
+            <div className="mt-4 text-center font-exo text-xs" style={{ color: "rgba(200,240,255,0.3)" }}>
+              <Icon name="Shield" size={12} className="inline mr-1" />
+              Безопасная оплата через ЮKassa · Активация сразу после оплаты
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

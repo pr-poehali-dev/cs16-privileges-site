@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "Missing privilege returns 400",
+      "method": "POST",
+      "path": "/",
+      "body": {"privilege": "", "player_id": ""},
+      "expectedStatus": 400,
+      "bodyMatcher": "partial"
+    }
+  ]
+}

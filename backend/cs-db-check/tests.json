@@ -1,0 +1,12 @@
+{
+  "tests": [
+    {
+      "name": "Get MySQL tables structure",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 200,
+      "expectedBody": {"tables": []},
+      "bodyMatcher": "partial"
+    }
+  ]
+}
